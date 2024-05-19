@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/card";
 import { useAccountBalance, useTonRate } from "./hooks/use-account-balance";
 import { beginCell, toNano, Address } from "@ton/ton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface TransferTokenParams {
   jettonAmount: bigint;
@@ -56,11 +56,16 @@ function App() {
   const [tonConnectUI] = useTonConnectUI();
   const [isTon, setIsTon] = useState(true);
   const wallet = useTonWallet();
-  console.log(wallet);
-  const { data: accountBalance, isLoading } = useAccountBalance(
-    wallet?.account.address
-  );
+  const {
+    data: accountBalance,
+    isLoading,
+    refetch,
+  } = useAccountBalance(wallet?.account.address);
   const { data: tonRate } = useTonRate();
+
+  useEffect(() => {
+    refetch();
+  }, [refetch, wallet]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -105,31 +110,33 @@ function App() {
           </CardDescription>
           <div className="my-4">
             <TonConnectButton />
-            <div>
-              {isLoading ? (
-                <div>Loading...</div>
-              ) : (
-                <div className="mt-4">
-                  {accountBalance?.balance && (
-                    <div className="flex flex-col gap-2">
-                      <span>
-                        {" "}
-                        Ton Balance:{" "}
-                        {(accountBalance?.balance / 1000000000).toFixed(4)}
-                      </span>
-                      <span>
-                        USDT Balance:{" $"}
-                        {(
-                          (accountBalance?.balance / 1000000000) *
-                          // @ts-expect-error 111
-                          tonRate?.data.data[0].asks[0][0]
-                        ).toFixed(4)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            {wallet && (
+              <div>
+                {isLoading ? (
+                  <div>Loading...</div>
+                ) : (
+                  <div className="mt-4">
+                    {accountBalance?.balance && (
+                      <div className="flex flex-col gap-2">
+                        <span>
+                          {" "}
+                          Ton Balance:{" "}
+                          {(accountBalance?.balance / 1000000000).toFixed(4)}
+                        </span>
+                        <span>
+                          USDT Balance:{" $"}
+                          {(
+                            (accountBalance?.balance / 1000000000) *
+                            // @ts-expect-error 111
+                            tonRate?.data.data[0].asks[0][0]
+                          ).toFixed(4)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -172,6 +179,7 @@ function App() {
                   onClick={() => {
                     setIsTon(!isTon);
                   }}
+                  disabled={true}
                   type="button"
                   style={{ backgroundColor: isTon ? "#22c55e" : "#3b82f6" }}
                 >
