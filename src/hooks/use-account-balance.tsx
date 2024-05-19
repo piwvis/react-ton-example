@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-interface AccountBalance {
+export interface AccountBalance {
   address: string;
   balance: number;
 }
@@ -33,8 +33,10 @@ export const useTonRate = () => {
   return query;
 };
 
-async function queryApiTonConsole<T>(endpoint: string | undefined): Promise<T> {
-  const url = `https://tonapi.io/v2/blockchain/accounts//${endpoint}`;
+export async function queryApiTonConsole<T>(
+  endpoint: string | undefined
+): Promise<T> {
+  const url = `https://tonapi.io/v2/blockchain/accounts/${endpoint}`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error("HTTP error " + response.status);

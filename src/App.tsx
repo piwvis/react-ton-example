@@ -25,7 +25,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAccountBalance, useTonRate } from "./hooks/use-account-balance";
+import {
+  AccountBalance,
+  queryApiTonConsole,
+  useAccountBalance,
+  useTonRate,
+} from "./hooks/use-account-balance";
 import { beginCell, toNano, Address } from "@ton/ton";
 import { useEffect, useState } from "react";
 
@@ -75,29 +80,20 @@ function App() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const walletData: AccountBalance = await queryApiTonConsole(values.wallet);
+    console.log(walletData);
+
     const myTransaction = {
       validUntil: Math.floor(Date.now() / 1000) + 360,
       messages: [
         {
-          address: values.wallet, // sender jetton wallet
-          amount: toNano(values.amount), // for commission fees, excess will be returned
-          payload: createTransferBody({
-            destinationAddress: Address.parse(values.wallet),
-            jettonAmount: toNano(values.amount),
-          })
-            .toBoc()
-            .toString("base64"), // payload with jetton transfer body
+          address: walletData.address, // sender jetton wallet
+          amount: (+values.amount * 1000000000).toString(), // for commission fees, excess will be returned
         },
       ],
     };
-    tonConnectUI.sendTransaction({
-      validUntil: myTransaction.validUntil,
-      messages: myTransaction.messages.map((message) => ({
-        ...message,
-        amount: message.amount.toString(),
-      })),
-    });
+    tonConnectUI.sendTransaction(myTransaction);
   }
 
   return (
