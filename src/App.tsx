@@ -82,7 +82,6 @@ function App() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const walletData: AccountBalance = await queryApiTonConsole(values.wallet);
-    console.log(walletData);
 
     const myTransaction = {
       validUntil: Math.floor(Date.now() / 1000) + 360,
