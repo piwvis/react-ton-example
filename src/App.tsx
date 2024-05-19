@@ -81,10 +81,10 @@ function App() {
       messages: [
         {
           address: values.wallet, // sender jetton wallet
-          amount: toNano(isTon ? values.amount : +values.amount / 1000), // for commission fees, excess will be returned
+          amount: toNano(values.amount), // for commission fees, excess will be returned
           payload: createTransferBody({
             destinationAddress: Address.parse(values.wallet),
-            jettonAmount: toNano(isTon ? values.amount : +values.amount / 1000),
+            jettonAmount: toNano(values.amount),
           })
             .toBoc()
             .toString("base64"), // payload with jetton transfer body
